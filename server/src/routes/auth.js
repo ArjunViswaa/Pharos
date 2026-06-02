@@ -2,7 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { User } from "../models/User.js";
-import { hashPassword } from "../lib/hash.js";
+import { hashPassword, verifyPassword } from "../lib/hash.js";
+import { signToken } from "../lib/jwt.js";
 
 const router = Router();
 
@@ -14,6 +15,11 @@ const signupSchema = z.object({
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password is too long"),
   role: z.enum(["learner", "mentor"]).optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Invalid email address"),
+  password: z.string().min(1, "Password is required").max(128),
 });
 
 router.post("/signup", async (req, res) => {
@@ -45,6 +51,39 @@ router.post("/signup", async (req, res) => {
       return res.status(409).json({ error: "EmailAlreadyRegistered" });
     }
     console.error("Signup failed:", err);
+    return res.status(500).json({ error: "InternalServerError" });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  // 1. Validate input
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      error: "ValidationError",
+      issues: parsed.error.flatten().fieldErrors,
+    });
+  }
+  const { email, password } = parsed.data;
+
+  try {
+    // 2. Lookup. We deliberately return the same generic error for
+    //    "no such user" and "wrong password" to avoid email enumeration.
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: "InvalidCredentials" });
+    }
+
+    const ok = await verifyPassword(password, user.passwordHash);
+    if (!ok) {
+      return res.status(401).json({ error: "InvalidCredentials" });
+    }
+
+    // 3. Issue JWT
+    const token = signToken(user);
+    return res.json({ user, token });
+  } catch (err) {
+    console.error("Login failed:", err);
     return res.status(500).json({ error: "InternalServerError" });
   }
 });
