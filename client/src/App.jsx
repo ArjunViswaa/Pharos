@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import SignupForm from "./components/SignupForm.jsx";
 
 export default function App() {
   const [health, setHealth] = useState(null);
@@ -18,6 +19,8 @@ export default function App() {
         <span className={`dot ${health?.status === "ok" ? "ok" : "off"}`} />
         <span>API: {health ? health.status : "checking..."}</span>
       </section>
+
+      <SignupForm />
     </main>
   );
 }
