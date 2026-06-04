@@ -4,6 +4,7 @@ import { z } from "zod";
 import { User } from "../models/User.js";
 import { hashPassword, verifyPassword } from "../lib/hash.js";
 import { signToken } from "../lib/jwt.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -84,6 +85,19 @@ router.post("/login", async (req, res) => {
     return res.json({ user, token });
   } catch (err) {
     console.error("Login failed:", err);
+    return res.status(500).json({ error: "InternalServerError" });
+  }
+});
+
+router.get("/me", requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.sub);
+    if (!user) {
+      return res.status(404).json({ error: "UserNotFound" });
+    }
+    return res.json({ user });
+  } catch (err) {
+    console.error("GET /me failed:", err);
     return res.status(500).json({ error: "InternalServerError" });
   }
 });
