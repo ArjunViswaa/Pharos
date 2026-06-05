@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import SignupForm from "./components/SignupForm.jsx";
+import LoginForm from "./components/LoginForm.jsx";
 
 export default function App() {
   const [health, setHealth] = useState(null);
+  const [view, setView] = useState("signup");
 
   useEffect(() => {
     fetch("/api/health")
@@ -20,7 +22,11 @@ export default function App() {
         <span>API: {health ? health.status : "checking..."}</span>
       </section>
 
-      <SignupForm />
+      {view === "signup" ? (
+        <SignupForm onSwitchToLogin={() => setView("login")} />
+      ) : (
+        <LoginForm onSwitchToSignup={() => setView("signup")} />
+      )}
     </main>
   );
 }

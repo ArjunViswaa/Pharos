@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { apiPost } from "../lib/api.js";
 
-export default function SignupForm() {
+export default function SignupForm({ onSwitchToLogin }) {
     const [form, setForm] = useState({
         name: "",
         email: "",
@@ -86,6 +86,12 @@ export default function SignupForm() {
             {submitting && <span className="spinner" />}
             {submitting ? "Creating account..." : "Sign up"}
         </button>
+        <p className="switch">
+            Already have an account?{" "}
+            <button type="button" className="link" onClick={onSwitchToLogin}>
+                Log in
+            </button>
+        </p>
         </form>
     );
 }
