@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { apiPost } from "../lib/api.js";
+import { useAuth } from "../auth/AuthContext.jsx";
 
 export default function LoginForm({ onSwitchToSignup }) {
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -17,8 +19,7 @@ export default function LoginForm({ onSwitchToSignup }) {
     setTopError(null);
     try {
       const data = await apiPost("/api/auth/login", form);
-      localStorage.setItem("pharos.token", data.token);
-      setSuccess(data.user);
+      login(data.token, data.user);
     } catch (err) {
       if (err.status === 400 && err.body?.issues) {
         setErrors(err.body.issues);
@@ -27,7 +28,6 @@ export default function LoginForm({ onSwitchToSignup }) {
       } else {
         setTopError("Something went wrong. Please try again.");
       }
-    } finally {
       setSubmitting(false);
     }
   }
