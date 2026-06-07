@@ -4,6 +4,7 @@ import "dotenv/config";
 
 import { connectDB, dbStatus } from "./db.js";
 import authRouter from "./routes/auth.js";
+import mentorsRouter from "./routes/mentors.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +22,8 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRouter);
+
+app.use("/api/mentors", mentorsRouter);
 
 async function start() {
   try {
