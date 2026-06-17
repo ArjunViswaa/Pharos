@@ -48,20 +48,13 @@ router.get("/", async (req, res) => {
 
     if (verifiedOnly) filter.verified = true;
 
-    if (search) {
-        filter.$or = [
-            { headline: { $regex: search, $options: "i" } },
-            { bio: { $regex: search, $options: "i" } },
-        ];
-    }
-
     if (skills) {
         const skillList = skills
             .split(",")
             .map((s) => s.trim().toLowerCase())
             .filter(Boolean);
         if (skillList.length) {
-            filter.skills = { $in: skillList };
+            filter.skills = { $in: skillList.map((s) => new RegExp(s, "i")) };
         }
     }
 
@@ -80,6 +73,21 @@ router.get("/", async (req, res) => {
     const sortBy = sortMap[sort] || sortMap.newest;
 
     try {
+        if (search) {
+            const matchingUsers = await User.find(
+                { name: { $regex: search, $options: "i" } },
+                "_id"
+            );
+            const userIds = matchingUsers.map((u) => u._id);
+
+            filter.$or = [
+                { headline: { $regex: search, $options: "i" } },
+                { bio: { $regex: search, $options: "i" } },
+                { skills: { $regex: search, $options: "i" } },
+                { userId: { $in: userIds } },
+            ];
+        }
+
         const skip = (page - 1) * limit;
 
         const [mentors, total] = await Promise.all([
