@@ -1,9 +1,9 @@
-export default function MentorCard({ mentor }) {
+export default function MentorCard({ mentor, onSelect }) {
   const name = mentor.userId?.name || "Unknown Mentor";
   const initial = name.charAt(0).toUpperCase();
 
   return (
-    <article className="mentor-card">
+    <article className="mentor-card" onClick={() => onSelect(mentor._id)}>
       <header className="mentor-card-head">
         <div className="mentor-avatar">{initial}</div>
         <div>

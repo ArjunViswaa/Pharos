@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { apiGet } from "../lib/api.js";
 import MentorCard from "./MentorCard.jsx";
+import MentorDetail from "./MentorDetail.jsx";
 
 export default function BrowseMentors() {
   const [mentors, setMentors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   const [search, setSearch] = useState("");
   const [skill, setSkill] = useState("");
@@ -59,9 +61,13 @@ export default function BrowseMentors() {
       ) : (
         <div className="mentor-grid">
           {mentors.map((m) => (
-            <MentorCard key={m._id} mentor={m} />
+            <MentorCard key={m._id} mentor={m} onSelect={setSelectedId} />
           ))}
         </div>
+      )}
+
+      {selectedId && (
+        <MentorDetail mentorId={selectedId} onClose={() => setSelectedId(null)} />
       )}
     </section>
   );

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../auth/AuthContext.jsx";
 import BrowseMentors from "./BrowseMentors.jsx";
+import BecomeMentor from "./BecomeMentor.jsx";
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -16,6 +17,12 @@ export default function Home() {
           Browse Mentors
         </button>
         <button
+          className={tab === "become" ? "tab active" : "tab"}
+          onClick={() => setTab("become")}
+        >
+          Become a Mentor
+        </button>
+        <button
           className={tab === "profile" ? "tab active" : "tab"}
           onClick={() => setTab("profile")}
         >
@@ -28,6 +35,8 @@ export default function Home() {
 
       {tab === "browse" ? (
         <BrowseMentors />
+      ) : tab === "become" ? (
+        <BecomeMentor onCreated={() => setTab("browse")} />
       ) : (
         <div className="card home-card">
           <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>

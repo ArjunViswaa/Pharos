@@ -114,6 +114,25 @@ router.get("/", async (req, res) => {
     }
 });
 
+router.get("/:id", async (req, res) => {
+    try {
+        const mentor = await Mentor.findById(req.params.id).populate(
+            "userId",
+            "name role"
+        );
+        if (!mentor) {
+            return res.status(404).json({ error: "MentorNotFound" });
+        }
+        return res.json({ mentor });
+    } catch (err) {
+        if (err?.name === "CastError") {
+            return res.status(400).json({ error: "InvalidMentorId" });
+        }
+        console.error("Get mentor failed:", err);
+        return res.status(500).json({ error: "InternalServerError" });
+    }
+});
+
 router.post("/", requireAuth, async (req, res) => {
     const parsed = createMentorSchema.safeParse(req.body);
     if (!parsed.success) {
