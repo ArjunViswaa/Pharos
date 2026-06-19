@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { User } from "../models/User.js";
 import { Mentor } from "../models/Mentor.js";
+import { Slot } from "../models/Slot.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
@@ -110,6 +111,23 @@ router.get("/", async (req, res) => {
         });
     } catch (err) {
         console.error("List mentors failed:", err);
+        return res.status(500).json({ error: "InternalServerError" });
+    }
+});
+
+router.get("/:id/slots", async (req, res) => {
+    try {
+        const slots = await Slot.find({
+            mentorId: req.params.id,
+            status: "open",
+            startsAt: { $gt: new Date() },
+        }).sort({ startsAt: 1 });
+        return res.json({ slots });
+    } catch (err) {
+        if (err?.name === "CastError") {
+            return res.status(400).json({ error: "InvalidMentorId" });
+        }
+        console.error("List mentor slots failed:", err);
         return res.status(500).json({ error: "InternalServerError" });
     }
 });
