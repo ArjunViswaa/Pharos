@@ -1,16 +1,24 @@
 import { useEffect, useState } from "react";
 import { apiGet } from "../lib/api.js";
+import { formatDateTime } from "../lib/format.js";
 
 export default function MentorDetail({ mentorId, onClose }) {
   const [mentor, setMentor] = useState(null);
+  const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    apiGet(`/api/mentors/${mentorId}`)
-      .then((data) => setMentor(data.mentor))
+    Promise.all([
+      apiGet(`/api/mentors/${mentorId}`),
+      apiGet(`/api/mentors/${mentorId}/slots`),
+    ])
+      .then(([mentorData, slotsData]) => {
+        setMentor(mentorData.mentor);
+        setSlots(slotsData.slots);
+      })
       .catch(() => setError("Couldn't load this mentor."))
       .finally(() => setLoading(false));
   }, [mentorId]);
@@ -69,7 +77,22 @@ export default function MentorDetail({ mentorId, onClose }) {
               </a>
             )}
 
-            <button className="book-btn">Book a session</button>
+            <div className="slot-list-wrap">
+              <h3 className="slot-list-title">Available slots</h3>
+              {slots.length === 0 ? (
+                <p className="browse-msg">No open slots right now.</p>
+              ) : (
+                <ul className="slot-list">
+                  {slots.map((slot) => (
+                    <li key={slot._id} className="slot-row">
+                      <span className="slot-time">{formatDateTime(slot.startsAt)}</span>
+                      <span className="slot-meta">{slot.durationMinutes} min</span>
+                      <button className="slot-book">Book</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
       </div>
