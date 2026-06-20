@@ -3,6 +3,7 @@ import { useAuth } from "../auth/AuthContext.jsx";
 import BrowseMentors from "./BrowseMentors.jsx";
 import BecomeMentor from "./BecomeMentor.jsx";
 import MyAvailability from "./MyAvailability.jsx";
+import MyBookings from "./MyBookings.jsx";
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -30,6 +31,12 @@ export default function Home() {
           My Availability
         </button>
         <button
+          className={tab === "bookings" ? "tab active" : "tab"}
+          onClick={() => setTab("bookings")}
+        >
+          My Bookings
+        </button>
+        <button
           className={tab === "profile" ? "tab active" : "tab"}
           onClick={() => setTab("profile")}
         >
@@ -46,6 +53,8 @@ export default function Home() {
         <BecomeMentor onCreated={() => setTab("browse")} />
       ) : tab === "availability" ? (
         <MyAvailability />
+      ) : tab === "bookings" ? (
+        <MyBookings />
       ) : (
         <div className="card home-card">
           <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>

@@ -6,6 +6,7 @@ import { connectDB, dbStatus } from "./db.js";
 import authRouter from "./routes/auth.js";
 import mentorsRouter from "./routes/mentors.js";
 import slotsRouter from "./routes/slots.js";
+import bookingsRouter from "./routes/bookings.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,8 @@ app.use("/api/auth", authRouter);
 app.use("/api/mentors", mentorsRouter);
 
 app.use("/api/slots", slotsRouter);
+
+app.use("/api/bookings", bookingsRouter);
 
 async function start() {
   try {

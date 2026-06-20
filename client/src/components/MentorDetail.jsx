@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiGet } from "../lib/api.js";
+import { apiGet, apiPost } from "../lib/api.js";
 import { formatDateTime } from "../lib/format.js";
 
 export default function MentorDetail({ mentorId, onClose }) {
@@ -7,6 +7,29 @@ export default function MentorDetail({ mentorId, onClose }) {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [bookingSlotId, setBookingSlotId] = useState(null);
+  const [notice, setNotice] = useState(null);
+
+  async function handleBook(slotId) {
+    setBookingSlotId(slotId);
+    setNotice(null);
+    try {
+      await apiPost("/api/bookings", { slotId });
+      setSlots((current) => current.filter((s) => s._id !== slotId));
+      setNotice("Booked! You can see it under My Bookings.");
+    } catch (err) {
+      if (err.status === 409) {
+        setSlots((current) => current.filter((s) => s._id !== slotId));
+        setNotice("That slot was just taken by someone else.");
+      } else if (err.status === 400 && err.body?.error === "CannotBookOwnSlot") {
+        setNotice("You can't book your own slot.");
+      } else {
+        setNotice("Couldn't book the slot. Please try again.");
+      }
+    } finally {
+      setBookingSlotId(null);
+    }
+  }
 
   useEffect(() => {
     setLoading(true);
@@ -79,6 +102,7 @@ export default function MentorDetail({ mentorId, onClose }) {
 
             <div className="slot-list-wrap">
               <h3 className="slot-list-title">Available slots</h3>
+              {notice && <p className="detail-notice">{notice}</p>}
               {slots.length === 0 ? (
                 <p className="browse-msg">No open slots right now.</p>
               ) : (
@@ -87,7 +111,13 @@ export default function MentorDetail({ mentorId, onClose }) {
                     <li key={slot._id} className="slot-row">
                       <span className="slot-time">{formatDateTime(slot.startsAt)}</span>
                       <span className="slot-meta">{slot.durationMinutes} min</span>
-                      <button className="slot-book">Book</button>
+                      <button
+                        className="slot-book"
+                        onClick={() => handleBook(slot._id)}
+                        disabled={bookingSlotId === slot._id}
+                      >
+                        {bookingSlotId === slot._id ? "Booking…" : "Book"}
+                      </button>
                     </li>
                   ))}
                 </ul>

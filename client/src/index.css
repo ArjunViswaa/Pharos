@@ -849,3 +849,23 @@ body::before {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(232, 200, 117, 0.3);
 }
+
+.slot-book:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.slot-amount {
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.detail-notice {
+  margin: 0 0 0.75rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--ok);
+  background: rgba(132, 204, 22, 0.1);
+  border: 1px solid rgba(132, 204, 22, 0.3);
+  border-radius: 8px;
+}
