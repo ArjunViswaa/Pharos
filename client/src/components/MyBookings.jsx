@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { apiGet } from "../lib/api.js";
+import { apiGet, apiPatch } from "../lib/api.js";
 import { formatDateTime } from "../lib/format.js";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     apiGet("/api/bookings/mine")
@@ -12,6 +13,22 @@ export default function MyBookings() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  async function handleCancel(id) {
+    setCancellingId(id);
+    try {
+      await apiPatch(`/api/bookings/${id}/cancel`);
+      setBookings((current) =>
+        current.map((b) =>
+          b._id === id ? { ...b, status: "cancelled" } : b
+        )
+      );
+    } catch (err) {
+      // booking stays
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   if (loading) return <p className="browse-msg">Loading…</p>;
 
@@ -27,8 +44,18 @@ export default function MyBookings() {
           <li key={booking._id} className="slot-row">
             <span className="slot-time">{formatDateTime(booking.startsAt)}</span>
             <span className="slot-meta">with {booking.mentorName}</span>
-            <span className="slot-meta">{booking.durationMinutes} min</span>
             <span className="slot-amount">₹{booking.amount}</span>
+            {booking.status === "cancelled" ? (
+              <span className="slot-status booked">cancelled</span>
+            ) : (
+              <button
+                className="slot-cancel"
+                onClick={() => handleCancel(booking._id)}
+                disabled={cancellingId === booking._id}
+              >
+                {cancellingId === booking._id ? "Cancelling…" : "Cancel"}
+              </button>
+            )}
           </li>
         ))}
       </ul>

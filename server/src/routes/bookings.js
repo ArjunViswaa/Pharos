@@ -75,6 +75,34 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
+router.patch("/:id/cancel", requireAuth, async (req, res) => {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.id,
+      learnerId: req.user.sub,
+    });
+    if (!booking) {
+      return res.status(404).json({ error: "BookingNotFound" });
+    }
+    if (booking.status === "cancelled") {
+      return res.status(400).json({ error: "AlreadyCancelled" });
+    }
+
+    booking.status = "cancelled";
+    await booking.save();
+
+    await Slot.findByIdAndUpdate(booking.slotId, { status: "open" });
+
+    return res.json({ booking });
+  } catch (err) {
+    if (err?.name === "CastError") {
+      return res.status(400).json({ error: "InvalidBookingId" });
+    }
+    console.error("Cancel booking failed:", err);
+    return res.status(500).json({ error: "InternalServerError" });
+  }
+});
+
 router.get("/mine", requireAuth, async (req, res) => {
   try {
     const bookings = await Booking.find({ learnerId: req.user.sub }).sort({

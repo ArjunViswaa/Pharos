@@ -869,3 +869,26 @@ body::before {
   border: 1px solid rgba(132, 204, 22, 0.3);
   border-radius: 8px;
 }
+
+.slot-cancel {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid rgba(252, 165, 165, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-cancel:hover:not(:disabled) {
+  background: rgba(252, 165, 165, 0.1);
+  border-color: var(--danger);
+}
+
+.slot-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -40,3 +40,12 @@ export async function apiPost(path, body) {
     });
     return handle(res);
 }
+
+export async function apiPatch(path, body) {
+    const res = await fetch(path, {
+        method: "PATCH",
+        headers: buildHeaders(body ? { "Content-Type": "application/json" } : {}),
+        body: body ? JSON.stringify(body) : undefined,
+    });
+    return handle(res);
+}
