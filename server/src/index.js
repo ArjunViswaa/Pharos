@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.js";
 import mentorsRouter from "./routes/mentors.js";
 import slotsRouter from "./routes/slots.js";
 import bookingsRouter from "./routes/bookings.js";
+import paymentsRouter from "./routes/payments.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +31,8 @@ app.use("/api/mentors", mentorsRouter);
 app.use("/api/slots", slotsRouter);
 
 app.use("/api/bookings", bookingsRouter);
+
+app.use("/api/payments", paymentsRouter);
 
 async function start() {
   try {
