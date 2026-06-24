@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiGet, apiPost } from "../lib/api.js";
 import { formatDateTime } from "../lib/format.js";
+import { useAuth } from "../auth/AuthContext.jsx";
 
 export default function MentorDetail({ mentorId, onClose }) {
   const [mentor, setMentor] = useState(null);
@@ -9,24 +10,52 @@ export default function MentorDetail({ mentorId, onClose }) {
   const [error, setError] = useState(null);
   const [bookingSlotId, setBookingSlotId] = useState(null);
   const [notice, setNotice] = useState(null);
+  const { user } = useAuth();
 
   async function handleBook(slotId) {
     setBookingSlotId(slotId);
     setNotice(null);
     try {
-      await apiPost("/api/bookings", { slotId });
-      setSlots((current) => current.filter((s) => s._id !== slotId));
-      setNotice("Booked! You can see it under My Bookings.");
+      const order = await apiPost("/api/payments/order", { slotId });
+
+      const options = {
+        key: order.keyId,
+        amount: order.amount * 100,
+        currency: order.currency,
+        name: "Pharos",
+        description: "Mentor session booking",
+        order_id: order.orderId,
+        prefill: { name: user?.name, email: user?.email },
+        theme: { color: "#e8c875" },
+        handler: async (response) => {
+          try {
+            await apiPost("/api/payments/verify", {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              slotId,
+            });
+            setSlots((current) => current.filter((s) => s._id !== slotId));
+            setNotice("Payment successful! Check My Bookings.");
+          } catch (verifyErr) {
+            setNotice("Payment couldn't be verified. Please try again.");
+          }
+          setBookingSlotId(null);
+        },
+        modal: {
+          ondismiss: () => setBookingSlotId(null),
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     } catch (err) {
       if (err.status === 409) {
         setSlots((current) => current.filter((s) => s._id !== slotId));
         setNotice("That slot was just taken by someone else.");
-      } else if (err.status === 400 && err.body?.error === "CannotBookOwnSlot") {
-        setNotice("You can't book your own slot.");
       } else {
-        setNotice("Couldn't book the slot. Please try again.");
+        setNotice("Couldn't start payment. Please try again.");
       }
-    } finally {
       setBookingSlotId(null);
     }
   }
