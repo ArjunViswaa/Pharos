@@ -18,7 +18,6 @@ const bookingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Slot",
       required: true,
-      unique: true,
     },
     mentorName: {
       type: String,
@@ -39,6 +38,13 @@ const bookingSchema = new mongoose.Schema(
     paymentId: {
       type: String,
     },
+    razorpayOrderId: {
+      type: String,
+    },
+    paymentConfirmed: {
+      type: Boolean,
+      default: false,
+    },
     status: {
       type: String,
       enum: ["booked", "cancelled"],
@@ -46,6 +52,11 @@ const bookingSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }
+);
+
+bookingSchema.index(
+  { slotId: 1 },
+  { unique: true, partialFilterExpression: { status: "booked" } }
 );
 
 bookingSchema.set("toJSON", {

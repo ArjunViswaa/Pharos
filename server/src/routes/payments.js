@@ -127,6 +127,7 @@ router.post("/verify", requireAuth, async (req, res) => {
                 durationMinutes: slot.durationMinutes,
                 amount,
                 paymentId: razorpayPaymentId,
+                razorpayOrderId,
             });
             return res.status(201).json({ booking });
         } catch (saveError) {
@@ -143,6 +144,40 @@ router.post("/verify", requireAuth, async (req, res) => {
         console.error("Verify payment failed:", err);
         return res.status(500).json({ error: "InternalServerError" });
     }
+});
+
+router.post("/webhook", async (req, res) => {
+    const signature = req.headers["x-razorpay-signature"];
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
+    const expectedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(req.body)
+        .digest("hex");
+
+    if (expectedSignature !== signature) {
+        return res.status(400).json({ error: "InvalidWebhookSignature" });
+    }
+
+    let event;
+    try {
+        event = JSON.parse(req.body.toString());
+    } catch (err) {
+        return res.status(400).json({ error: "InvalidPayload" });
+    }
+
+    if (event.event === "payment.captured") {
+        const orderId = event.payload?.payment?.entity?.order_id;
+        if (orderId) {
+            await Booking.updateOne(
+                { razorpayOrderId: orderId },
+                { paymentConfirmed: true }
+            );
+            console.log(`Webhook: payment confirmed for order ${orderId}`);
+        }
+    }
+
+    return res.json({ received: true });
 });
 
 export default router;
