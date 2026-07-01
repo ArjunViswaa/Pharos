@@ -11,6 +11,7 @@ import mentorsRouter from "./routes/mentors.js";
 import slotsRouter from "./routes/slots.js";
 import bookingsRouter from "./routes/bookings.js";
 import paymentsRouter from "./routes/payments.js";
+import adminRouter from "./routes/admin.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,8 +21,6 @@ app.use(helmet());
 app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(mongoSanitize());
-app.use("/api/payments/webhook", express.raw({ type: "application/json" }));
-app.use(express.json());
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -59,6 +58,8 @@ app.use("/api/slots", slotsRouter);
 app.use("/api/bookings", bookingsRouter);
 
 app.use("/api/payments", paymentsRouter);
+
+app.use("/api/admin", adminRouter);
 
 async function start() {
   try {

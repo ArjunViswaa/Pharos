@@ -4,6 +4,7 @@ import BrowseMentors from "./BrowseMentors.jsx";
 import BecomeMentor from "./BecomeMentor.jsx";
 import MyAvailability from "./MyAvailability.jsx";
 import MyBookings from "./MyBookings.jsx";
+import AdminPanel from "./AdminPanel.jsx";
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -45,6 +46,14 @@ export default function Home() {
         <button className="tab logout" onClick={logout}>
           Log out
         </button>
+        {user.role === "admin" && (
+          <button
+            className={tab === "admin" ? "tab active" : "tab"}
+            onClick={() => setTab("admin")}
+          >
+            Admin
+          </button>
+        )}
       </nav>
 
       {tab === "browse" ? (
@@ -55,6 +64,8 @@ export default function Home() {
         <MyAvailability />
       ) : tab === "bookings" ? (
         <MyBookings />
+      ) : tab === "admin" ? (
+        <AdminPanel />
       ) : (
         <div className="card home-card">
           <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>
