@@ -3,6 +3,7 @@ import { useAuth } from "./auth/AuthContext.jsx";
 import SignupForm from "./components/SignupForm.jsx";
 import LoginForm from "./components/LoginForm.jsx";
 import Home from "./components/Home.jsx";
+import { apiGet } from "./lib/api.js";
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -10,8 +11,7 @@ export default function App() {
   const [view, setView] = useState("login");
 
   useEffect(() => {
-    fetch("/api/health")
-      .then((r) => r.json())
+    apiGet("/api/health")
       .then(setHealth)
       .catch(() => setHealth({ status: "unreachable" }));
   }, []);

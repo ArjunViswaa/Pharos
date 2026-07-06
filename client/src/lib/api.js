@@ -1,3 +1,4 @@
+const API_BASE = import.meta.env.VITE_API_URL || "";
 const TOKEN_KEY = "pharos.token";
 
 export function getToken() {
@@ -28,12 +29,12 @@ async function handle(res) {
 }
 
 export async function apiGet(path) {
-    const res = await fetch(path, { headers: buildHeaders() });
+    const res = await fetch(API_BASE + path, { headers: buildHeaders() });
     return handle(res);
 }
 
 export async function apiPost(path, body) {
-    const res = await fetch(path, {
+    const res = await fetch(API_BASE + path, {
         method: "POST",
         headers: buildHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(body),
@@ -42,7 +43,7 @@ export async function apiPost(path, body) {
 }
 
 export async function apiPatch(path, body) {
-    const res = await fetch(path, {
+    const res = await fetch(API_BASE + path, {
         method: "PATCH",
         headers: buildHeaders(body ? { "Content-Type": "application/json" } : {}),
         body: body ? JSON.stringify(body) : undefined,
